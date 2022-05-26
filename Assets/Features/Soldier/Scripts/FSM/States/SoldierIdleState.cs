@@ -18,7 +18,7 @@ namespace Features.Soldier.Scripts.FSM.States
 
         public override void Awake()
         {
-            _soldierView.TransitionTo(SoldierAnimations.Idle);
+            _soldierView.SetAnimation(SoldierAnimations.Idle);
             Debug.Log("Transition to " + SoldierAnimations.Idle);
             _currentTimeToChangeState = timeToChangeState;
         }

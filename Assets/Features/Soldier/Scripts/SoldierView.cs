@@ -11,10 +11,11 @@ namespace Features.Soldier.Scripts
             _animator = GetComponent<Animator>();
         }
 
-        public void TransitionTo(SoldierAnimations animation)
+        public void SetAnimation(SoldierAnimations animation)
         {
             _animator.SetTrigger(animation.ToString());
         }
+
     }
 
     public enum SoldierAnimations

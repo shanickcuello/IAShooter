@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Features.PathFinding;
 using UnityEngine;
 
 public class MouseInputHandler : MonoBehaviour {
@@ -23,7 +24,7 @@ public class MouseInputHandler : MonoBehaviour {
 			if (Physics.Raycast(ray, out result, Mathf.Infinity, tileLayer)) {
 				if (Input.GetMouseButtonDown(0)) {
 					Tile tile = result.collider.GetComponent<Tile>();
-					if (tile != null) tile.ToggleObstacle();
+					// if (tile != null) tile.ToggleObstacle();
 				}
 				if (Input.GetMouseButtonDown(1)) {
 					Vector3 destPosition = result.collider.transform.position;

@@ -1,161 +1,188 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class PathfindingManager : MonoBehaviour {
-	[SerializeField]
-	private Transform tileHolder;
-	private Node[,] nodes;
+namespace Features.PathFinding
+{
+    public class PathfindingManager : MonoBehaviour
+    {
+        [SerializeField] private Transform tileHolder;
+        private Node[,] nodes;
+        private int width;
+        private int height;
+        private Vector3 min;
+        private Vector3 max;
+        private float gapX;
+        private float gapZ;
+        
 
-	private int width;
-	private int height;
-	private Vector3 min;
-	private Vector3 max;
-	private float gapX;
-	private float gapZ;
+        private void Awake()
+        {
+            List<Tile> tiles = new List<Tile>();
+            for (int i = 0; i < tileHolder.childCount; i++)
+            {
+                tiles.Add(tileHolder.GetChild(i).GetComponent<Tile>());
+            }
 
-	/*
-	 * Tiles should be shape of
-	 *	  /		1\
-	 *	 /		  \
-	 *	/0		   \
-	 */
-	private void Awake() {
-		List<Tile> tiles = new List<Tile>();
-		for (int i = 0; i < tileHolder.childCount; i++) {
-			tiles.Add(tileHolder.GetChild(i).GetComponent<Tile>());
-		}
+            min = tiles[0].transform.position;
+            max = tiles[tiles.Count - 1].transform.position;
 
-		min = tiles[0].transform.position;
-		max = tiles[1].transform.position;
+            width = (int) (max.x - min.x) + 1;
+            height = (int) (max.z - min.z) + 1;
 
-		width = (int)(max.x - min.x) + 1;
-		height = (int)(max.z - min.z) + 1;
+            gapX = (max.x - min.x) / width;
+            gapZ = (max.z - min.z) / height;
 
-		gapX = (max.x - min.x) / width;
-		gapZ = (max.z - min.z) / height;
+            nodes = new Node[width, height];
+            foreach (var tile in tiles)
+            {
+                int x = (int) (tile.transform.position.x - min.x);
+                int y = (int) (tile.transform.position.z - min.z);
 
-		nodes = new Node[width, height];
-		foreach (var tile in tiles) {
-			int x = (int)(tile.transform.position.x - min.x);
-			int y = (int)(tile.transform.position.z - min.z);
+                nodes[x, y] = new Node(x, y, tile);
+            }
 
-			nodes[x, y] = new Node(x, y, tile);
-		}
-		Node.nodes = nodes;
-		Point.nodes = nodes;
-	}
+            Node.nodes = nodes;
+            Point.nodes = nodes;
+        }
 
-	private List<Node> GetAdjacents(Node node) {
-		List<Node> adjacents = new List<Node>();
+        private List<Node> GetAdjacents(Node node)
+        {
+            List<Node> adjacents = new List<Node>();
 
-		for (int dx = -1; dx <= 1; dx++) {
-			for (int dy = -1; dy <= 1; dy++) {
-				if (dx == 0 && dy == 0) continue;
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    if (dx == 0 && dy == 0) continue;
 
-				int x = node.x + dx;
-				int y = node.y + dy;
+                    int x = node.x + dx;
+                    int y = node.y + dy;
 
-				if (x >= 0 && x < width && y >= 0 && y < height) {
-					if (nodes[x, y].isBlocked) continue;
+                    if (x >= 0 && x < width && y >= 0 && y < height)
+                    {
+                        if (nodes[x, y].isBlocked) continue;
 
-					if (dx == 0 || dy == 0) {
-						adjacents.Add(nodes[x, y]);
-					}
-					else {
-						if (!nodes[node.x, y].isBlocked && !nodes[x, node.y].isBlocked)
-							adjacents.Add(nodes[x, y]);
-					}
-				}
-			}
-		}
-		return adjacents;
-	}
+                        if (dx == 0 || dy == 0)
+                        {
+                            adjacents.Add(nodes[x, y]);
+                        }
+                        else
+                        {
+                            if (!nodes[node.x, y].isBlocked && !nodes[x, node.y].isBlocked)
+                                adjacents.Add(nodes[x, y]);
+                        }
+                    }
+                }
+            }
 
-	public bool CheckPathExist(Node deptNode, Node destNode) {
-		return FindPath(deptNode, deptNode).Count > 0;
-	}
+            return adjacents;
+        }
 
-	public List<Vector3> FindPath(Node deptNode, Node destNode) {
-		NodeHeap openHeap = new NodeHeap();
-		HashSet<Node> closedSet = new HashSet<Node>();
+        public bool CheckPathExist(Node deptNode, Node destNode)
+        {
+            return FindPath(deptNode, deptNode).Count > 0;
+        }
 
-		openHeap.Add(deptNode);
-		deptNode.fromCost = deptNode.toCost = 0;
-		deptNode.from = destNode.from = null;
+        public List<Vector3> FindPath(Node deptNode, Node destNode)
+        {
+            NodeHeap openHeap = new NodeHeap();
+            HashSet<Node> closedSet = new HashSet<Node>();
 
-		while (openHeap.Count > 0) {
-			Node nodeToVisit = openHeap.Pop();
-			closedSet.Add(nodeToVisit);
+            openHeap.Add(deptNode);
+            deptNode.fromCost = deptNode.toCost = 0;
+            deptNode.from = destNode.from = null;
 
-			if (nodeToVisit == destNode) {
-				break;
-			}
+            while (openHeap.Count > 0)
+            {
+                Node nodeToVisit = openHeap.Pop();
+                closedSet.Add(nodeToVisit);
 
-			foreach (var adjacent in GetAdjacents(nodeToVisit)) {
-				if (closedSet.Contains(adjacent)) continue;
+                if (nodeToVisit == destNode)
+                {
+                    break;
+                }
 
-				Node fromNode = null;
-				if (nodeToVisit.from != null && nodeToVisit.from.IsLineOfSight(adjacent))
-					fromNode = nodeToVisit.from;
-				else
-					fromNode = nodeToVisit;
+                foreach (var adjacent in GetAdjacents(nodeToVisit))
+                {
+                    if (closedSet.Contains(adjacent)) continue;
 
-				int toAdjacentCost = fromNode.toCost + PredictDistanceCost(fromNode, adjacent);
-				if (!openHeap.Contains(adjacent) || toAdjacentCost < adjacent.toCost) {
-					adjacent.toCost = toAdjacentCost;
-					adjacent.fromCost = PredictDistanceCost(adjacent, destNode);
-					adjacent.from = fromNode;
+                    Node fromNode = null;
+                    if (nodeToVisit.from != null && nodeToVisit.from.IsLineOfSight(adjacent))
+                        fromNode = nodeToVisit.from;
+                    else
+                        fromNode = nodeToVisit;
 
-					if (openHeap.Contains(adjacent)) openHeap.UpdateItem(adjacent);
-					else openHeap.Add(adjacent);
-				}
-			}
-		}
+                    int toAdjacentCost = fromNode.toCost + PredictDistanceCost(fromNode, adjacent);
+                    if (!openHeap.Contains(adjacent) || toAdjacentCost < adjacent.toCost)
+                    {
+                        adjacent.toCost = toAdjacentCost;
+                        adjacent.fromCost = PredictDistanceCost(adjacent, destNode);
+                        adjacent.from = fromNode;
 
-		List<Node> path = new List<Node>();
-		if (destNode.from != null) {
-			Node currentNode = destNode;
+                        if (openHeap.Contains(adjacent)) openHeap.UpdateItem(adjacent);
+                        else openHeap.Add(adjacent);
+                    }
+                }
+            }
 
-			while (currentNode != null) {
-				path.Add(currentNode);
-				currentNode = currentNode.from;
-			}
-			path.Reverse();
-		}
+            List<Node> path = new List<Node>();
+            if (destNode.from != null)
+            {
+                Node currentNode = destNode;
 
-		// PS
-		// SmoothingPath(path);
+                while (currentNode != null)
+                {
+                    path.Add(currentNode);
+                    currentNode = currentNode.from;
+                }
 
-		List<Vector3> positionPath = new List<Vector3>();
+                path.Reverse();
+            }
 
-		// Visit departure node looks wired when path is changed
-		// Skip first(departure) node
-		for (int i = 1; i < path.Count; i++) {
-			positionPath.Add(path[i].tile.transform.position);
-		}
-		return positionPath;
-	}
+            // PS
+            // SmoothingPath(path);
 
-	private void SmoothingPath(List<Node> path) {
-		for (int i = 1; i < path.Count - 1; i++) {
-			if (path[i - 1].IsLineOfSight(path[i + 1])) {
-				path.RemoveAt(i--);
-			}
-		}
-	}
+            List<Vector3> positionPath = new List<Vector3>();
 
-	private int PredictDistanceCost(Node dept, Node dest) {
-		int dx = Mathf.Abs(dept.x - dest.x);
-		int dy = Mathf.Abs(dept.y - dest.y);
+            // Visit departure node looks wired when path is changed
+            // Skip first(departure) node
+            for (int i = 1; i < path.Count; i++)
+            {
+                positionPath.Add(path[i].tile.transform.position);
+            }
 
-		return Mathf.Abs(dx - dy) * 10 + (dx > dy ? dy : dx) * 14;
-	}
+            return positionPath;
+        }
 
-	public Node PositionToNode(Vector3 position) {
-		int x = Mathf.Clamp((int)((position.x - min.x) / gapX), 0, width);
-		int y = Mathf.Clamp((int)((position.z - min.z) / gapZ), 0, height);
-		return nodes[x, y];
-	}
+        private void SmoothingPath(List<Node> path)
+        {
+            for (int i = 1; i < path.Count - 1; i++)
+            {
+                if (path[i - 1].IsLineOfSight(path[i + 1]))
+                {
+                    path.RemoveAt(i--);
+                }
+            }
+        }
+
+        private int PredictDistanceCost(Node dept, Node dest)
+        {
+            int dx = Mathf.Abs(dept.x - dest.x);
+            int dy = Mathf.Abs(dept.y - dest.y);
+
+            return Mathf.Abs(dx - dy) * 10 + (dx > dy ? dy : dx) * 14;
+        }
+
+        public Node PositionToNode(Vector3 position)
+        {
+            int x = Mathf.Clamp((int) ((position.x - min.x) / gapX), 0, width);
+            int y = Mathf.Clamp((int) ((position.z - min.z) / gapZ), 0, height);
+            return nodes[x, y];
+        }
+
+        public Node GetRandomNode()
+        {
+            return nodes[Random.Range(0, width), Random.Range(0, height)];
+        }
+    }
 }
