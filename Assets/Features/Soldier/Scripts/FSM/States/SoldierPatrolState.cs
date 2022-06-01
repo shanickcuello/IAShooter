@@ -19,26 +19,31 @@ namespace Features.Soldier.Scripts.FSM.States
             _soldierController = soldierController;
             _soldierView = soldierView;
             _pathfindingManager = pathfindingManager;
-            _soldierView.SetAnimation(SoldierAnimations.Walking);
         }
 
         public override void Awake()
         {
             Debug.Log("Moving");
-            SetCurrentNodeFromPosition();
-            SetRandomNodeToGo();
-            CreatePathFromDestinationNode();
-            MoveByPath();
+            MoveOverPath();
         }
-        
+
         public override void Execute()
         {
             _soldierController.SearchForEnemy();
         }
 
-        private void MoveByPath()
+        private void MoveOverPath()
         {
-            _soldierController.Move(_path);
+            SetCurrentNodeFromPosition();
+            SetRandomNodeToGo();
+            CreatePathFromDestinationNode();
+            _soldierController.MoveBy(_path, ChangeToIdle);
+            _soldierView.SetAnimation(SoldierAnimations.Walking);
+        }
+
+        private void ChangeToIdle()
+        {
+            _soldierController.ChangeState(ESoldierStates.Idle);
         }
 
         private void CreatePathFromDestinationNode()
@@ -55,7 +60,5 @@ namespace Features.Soldier.Scripts.FSM.States
         {
             _currentNode = _pathfindingManager.PositionToNode(_soldierController.transform.position);
         }
-
-      
     }
 }

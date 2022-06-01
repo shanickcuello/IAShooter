@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Features.Soldier.Scripts
 {
@@ -11,11 +10,17 @@ namespace Features.Soldier.Scripts
             _animator = GetComponent<Animator>();
         }
 
-        public void SetAnimation(SoldierAnimations animation)
+        public void SetAnimation(SoldierAnimations soldierAnimation)
         {
-            _animator.SetTrigger(animation.ToString());
+            Debug.Log($"Transicion a {soldierAnimation.ToString()}");
+            _animator.SetTrigger(soldierAnimation.ToString());
         }
 
+        public void LookAt(Vector3 checkPoint)
+        {
+            var lookRotation = Quaternion.LookRotation(checkPoint - transform.position);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+        }
     }
 
     public enum SoldierAnimations

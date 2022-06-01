@@ -6,7 +6,7 @@ namespace Features.Soldier.Scripts.FSM.States
     {
         private readonly SoldierController _soldierController;
         private readonly SoldierView _soldierView;
-        private float timeToChangeState = 15;
+        private float timeToChangeState = 5;
         private float _currentTimeToChangeState;
         
         public SoldierIdleState(SoldierController soldierController, SoldierView soldierView)
@@ -19,7 +19,7 @@ namespace Features.Soldier.Scripts.FSM.States
         public override void Awake()
         {
             _soldierView.SetAnimation(SoldierAnimations.Idle);
-            Debug.Log("Transition to " + SoldierAnimations.Idle);
+            Debug.Log("Awake de " + SoldierAnimations.Idle);
             _currentTimeToChangeState = timeToChangeState;
         }
 
