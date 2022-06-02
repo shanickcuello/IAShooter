@@ -26,6 +26,7 @@ namespace Features.Soldier.Scripts
     public enum SoldierAnimations
     {
         Idle,
-        Walking
+        Walking,
+        Shoot
     }
 }

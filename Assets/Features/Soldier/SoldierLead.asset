@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: SoldierLead
   m_EditorClassIdentifier: 
   speedMovement: 6
+  timeBetweenShoots: 1
