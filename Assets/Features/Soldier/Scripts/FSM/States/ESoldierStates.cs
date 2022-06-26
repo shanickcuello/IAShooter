@@ -4,6 +4,7 @@ namespace Features.Soldier.Scripts.FSM.States
     {
         Idle,
         Patrol,
-        Attack
+        Attack,
+        Death
     }
 }

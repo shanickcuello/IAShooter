@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace Features.Soldier.Scripts
 {
     public class SoldierView : MonoBehaviour
     {
         private Animator _animator;
+
         private void Awake()
         {
             _animator = GetComponent<Animator>();
@@ -13,13 +15,28 @@ namespace Features.Soldier.Scripts
         public void SetAnimation(SoldierAnimations soldierAnimation)
         {
             Debug.Log($"Transicion a {soldierAnimation.ToString()}");
+            if(_animator == null)
+                _animator = GetComponent<Animator>();
             _animator.SetTrigger(soldierAnimation.ToString());
         }
 
-        public void LookAt(Vector3 checkPoint)
+        public void LookAt(Transform target)
         {
-            var lookRotation = Quaternion.LookRotation(checkPoint - transform.position);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+            var lookRotation = Quaternion.LookRotation(target.transform.position - transform.position);
+            var targetRotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+            transform.rotation = new Quaternion(0, targetRotation.y, 0, targetRotation.w);
+        }
+        
+        public void LookAt(Vector3 target)
+        {
+            var lookRotation = Quaternion.LookRotation(target - transform.position);
+            var targetRotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+            transform.rotation = new Quaternion(0, targetRotation.y, 0, targetRotation.w);
+        }
+
+        public void Death()
+        {
+            SetAnimation(SoldierAnimations.Death);
         }
     }
 
@@ -27,6 +44,7 @@ namespace Features.Soldier.Scripts
     {
         Idle,
         Walking,
-        Shoot
+        Shoot,
+        Death
     }
 }

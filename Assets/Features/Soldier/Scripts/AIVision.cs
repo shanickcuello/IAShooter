@@ -16,7 +16,6 @@ namespace Features.Soldier.Scripts
         [SerializeField] protected Color visionColor = Color.red;
         [SerializeField] protected int scanFrecuency = 30;
         [SerializeField] List<GameObject> gameObjectsScaned = new List<GameObject>();
-        [SerializeField] protected LayerMask enemyLayer;
         [SerializeField] protected LayerMask obstacleLayer;
 
         private Collider[] _colliders = new Collider[50];

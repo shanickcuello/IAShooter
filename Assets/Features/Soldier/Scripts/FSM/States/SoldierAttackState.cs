@@ -7,7 +7,6 @@ namespace Features.Soldier.Scripts.FSM.States
     {
         private SoldierController _soldierController;
         private SoldierView _soldierView;
-        private Transform _target;
         public SoldierAttackState(SoldierController controller, SoldierView view)
         {
             _soldierController = controller;
@@ -17,7 +16,12 @@ namespace Features.Soldier.Scripts.FSM.States
         public override void Awake()
         {
             _soldierController.StopMoving();
-            _soldierController.ShootIntermittent(_target);
+            _soldierController.ShootIntermittent();
+        }
+
+        public override void Execute()
+        {
+            _soldierView.LookAt(_soldierController.target);
         }
     }
 }

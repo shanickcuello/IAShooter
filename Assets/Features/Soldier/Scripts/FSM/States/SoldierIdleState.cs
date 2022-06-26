@@ -25,6 +25,7 @@ namespace Features.Soldier.Scripts.FSM.States
 
         public override void Execute()
         {
+            _soldierController.SearchForEnemy();
             _currentTimeToChangeState-= Time.deltaTime;
             if (_currentTimeToChangeState <= 0)
             {
