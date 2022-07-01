@@ -2,13 +2,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Features.LifeSystem;
 using Features.PathFinding;
+using Features.PowerUps;
 using Features.Soldier.Scripts.FSM;
 using Features.Soldier.Scripts.FSM.States;
 using Features.Soldier.Scripts.Weapons;
 using Features.Weapons.Bullets.Code;
+using Features.PowerUps;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Features.Soldier.Scripts
 {
@@ -17,10 +19,11 @@ namespace Features.Soldier.Scripts
     {
         [SerializeField] PathfindingManager pathfindingManager;
         [SerializeField] private LayerMask enemyLayer;
+        [SerializeField] private LayerMask lifeLayer;
         [SerializeField] SoldierData soldierData;
         [SerializeField] private GameObject _weaponPrefab;
         public Transform target => _target;
-        private float speedMovement;
+        private float _speedMovement;
         private IAIVision _aiVision;
         private SoldierView _soldierView;
         private SoldierIdleState<ESoldierStates> _soldierIdleState;
@@ -32,11 +35,12 @@ namespace Features.Soldier.Scripts
         private IWeapon _weapon;
         private Coroutine _currentPath;
         private Life _life;
+        [SerializeField] private List<Transform> _listOfPowerUps = new List<Transform>();
 
 
         protected void Awake()
         {
-            _life = new Life(100, Death);
+            _life = new Life(soldierData.life, onDeath: Death);
             _aiVision = GetComponent<AIVision>();
             _soldierView = GetComponent<SoldierView>();
             _weapon = _weaponPrefab.GetComponent<IWeapon>();
@@ -62,7 +66,7 @@ namespace Features.Soldier.Scripts
 
         private void Start()
         {
-            speedMovement = soldierData.speedMovement;
+            _speedMovement = soldierData.speedMovement;
         }
 
 
@@ -91,7 +95,7 @@ namespace Features.Soldier.Scripts
                 while (transform.position != checkPoint)
                 {
                     transform.position =
-                        Vector3.MoveTowards(transform.position, checkPoint, speedMovement * Time.deltaTime);
+                        Vector3.MoveTowards(transform.position, checkPoint, _speedMovement * Time.deltaTime);
                     _soldierView.LookAt(checkPoint);
                     yield return null;
                 }
@@ -105,6 +109,18 @@ namespace Features.Soldier.Scripts
             if (!_aiVision.SearchBy(enemyLayer).Any()) return;
             _target = _aiVision.SearchBy(enemyLayer).First().transform;
             ChangeState(ESoldierStates.Attack);
+        }
+
+        public void SearchForLife()
+        {
+            if (!_aiVision.SearchBy(lifeLayer).Any()) return;
+            RememberPowerUpPosition(_aiVision.SearchBy(lifeLayer).First().transform);
+        }
+
+        private void RememberPowerUpPosition(Transform powerUp)
+        {
+            if (!_listOfPowerUps.Contains(powerUp))
+                _listOfPowerUps.Add(powerUp);
         }
 
         public void ShootIntermittent()
@@ -146,6 +162,13 @@ namespace Features.Soldier.Scripts
         public void UnableColliders()
         {
             GetComponent<CapsuleCollider>().enabled = false;
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (!other.GetComponent<LifePowerUp>()) return;
+            var liferPowerUp = other.GetComponent<LifePowerUp>();
+            _life?.AddLife(liferPowerUp.Consume());
         }
     }
 }

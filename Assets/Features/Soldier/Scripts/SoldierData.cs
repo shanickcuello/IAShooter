@@ -7,5 +7,6 @@ namespace Features.Soldier.Scripts
     {
         public float speedMovement;
         public float timeBetweenShoots;
+        public int life;
     }
 }

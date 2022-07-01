@@ -19,12 +19,12 @@ namespace Features.Soldier.Scripts.FSM.States
         public override void Awake()
         {
             _soldierView.SetAnimation(SoldierAnimations.Idle);
-            Debug.Log("Awake de " + SoldierAnimations.Idle);
             _currentTimeToChangeState = timeToChangeState;
         }
 
         public override void Execute()
         {
+            _soldierController.SearchForLife();
             _soldierController.SearchForEnemy();
             _currentTimeToChangeState-= Time.deltaTime;
             if (_currentTimeToChangeState <= 0)

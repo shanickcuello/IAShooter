@@ -14,7 +14,6 @@ namespace Features.Soldier.Scripts
 
         public void SetAnimation(SoldierAnimations soldierAnimation)
         {
-            Debug.Log($"Transicion a {soldierAnimation.ToString()}");
             if(_animator == null)
                 _animator = GetComponent<Animator>();
             _animator.SetTrigger(soldierAnimation.ToString());

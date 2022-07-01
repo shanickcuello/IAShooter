@@ -23,13 +23,13 @@ namespace Features.Soldier.Scripts.FSM.States
 
         public override void Awake()
         {
-            Debug.Log("Moving");
             MoveOverPath();
         }
 
         public override void Execute()
         {
             _soldierController.SearchForEnemy();
+            _soldierController.SearchForLife();
         }
 
         private void MoveOverPath()
