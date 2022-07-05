@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speedMovement: 6
   timeBetweenShoots: 1
+  life: 100

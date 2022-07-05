@@ -6,31 +6,30 @@ namespace Features.LifeSystem
     public class Life 
     {
         private int _maxLife;
-        [SerializeField] private int _lifeAmount;
+        public int LifeAmount;
         private readonly Action _onDeath;
 
         public Life(int maxLife, Action onDeath)
         {
-            _lifeAmount = maxLife;
+            LifeAmount = maxLife;
             _onDeath = onDeath;
         }
 
 
         public void DecreaseLife(int damagePower)
         {
-            _lifeAmount -= damagePower;
-            Debug.Log($"mi vida es: {_lifeAmount}");
+            LifeAmount -= damagePower;
             CheckDeath();
         }
 
         private void CheckDeath()
         {
-            if (_lifeAmount <= 0)
+            if (LifeAmount <= 0)
             {
                 _onDeath();
             }
         }
 
-        public void AddLife(int life) => Mathf.Min(_maxLife, _lifeAmount += life);
+        public void AddLife(int life) => Mathf.Min(_maxLife, LifeAmount += life);
     }
 }

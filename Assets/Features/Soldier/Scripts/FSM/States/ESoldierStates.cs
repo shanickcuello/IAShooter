@@ -5,6 +5,8 @@ namespace Features.Soldier.Scripts.FSM.States
         Idle,
         Patrol,
         Attack,
-        Death
+        Death,
+        SearchLife,
+        GoToFight
     }
 }

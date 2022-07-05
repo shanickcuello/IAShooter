@@ -23,7 +23,7 @@ namespace Features.Soldier.Scripts
         private int scanCount;
         private float scanInterval;
         private float scanTimer;
-        
+
         protected virtual void Awake()
         {
             _myTransform = GetComponent<Transform>();
@@ -34,7 +34,7 @@ namespace Features.Soldier.Scripts
             scanInterval = 1 / scanFrecuency;
         }
 
-        
+
         public List<GameObject> SearchBy(LayerMask layerMask)
         {
             scanTimer -= Time.deltaTime;
@@ -43,7 +43,7 @@ namespace Features.Soldier.Scripts
             scanTimer = scanInterval;
             return Scan(layerMask);
         }
-        
+
         private bool IsInSight(GameObject go)
         {
             var origin = transform.position;
@@ -101,12 +101,16 @@ namespace Features.Soldier.Scripts
             Gizmos.DrawWireSphere(transform.position, visionDistance);
             for (int i = 0; i < scanCount; i++)
             {
+                if (_colliders[i] == null)
+                    continue;
                 Gizmos.DrawSphere(_colliders[i].transform.position, 0.2f);
             }
 
             Gizmos.color = Color.green;
             foreach (var go in gameObjectsScaned)
             {
+                if (go == null)
+                    continue;
                 Gizmos.DrawSphere(go.transform.position, go.GetComponent<Collider>().bounds.extents.magnitude);
             }
         }
@@ -186,7 +190,5 @@ namespace Features.Soldier.Scripts
             mesh.RecalculateNormals();
             return mesh;
         }
-
-
     }
 }

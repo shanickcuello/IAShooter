@@ -76,8 +76,12 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 4096
+  lifeLayer:
+    serializedVersion: 2
+    m_Bits: 0
   soldierData: {fileID: 11400000, guid: b0c140b6102a06540adcb67564555e0b, type: 2}
   _weaponPrefab: {fileID: 2432497312037427425}
+  listOfPowerUps: []
 --- !u!114 &2432497310785203503
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -151,7 +155,7 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.28
+  m_Radius: 0.44
   m_Height: 2.46
   m_Direction: 1
   m_Center: {x: 0, y: 1.41, z: 0}
