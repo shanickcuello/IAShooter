@@ -1,9 +1,10 @@
 using UnityEngine;
 
-namespace Features.Soldier.Scripts.Weapons
+namespace Features.Weapons
 {
     public interface IWeapon
     {
         void Fire(Transform transform);
+        void ShutdownLight();
     }
 }

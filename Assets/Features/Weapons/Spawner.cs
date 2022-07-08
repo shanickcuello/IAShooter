@@ -11,5 +11,13 @@ namespace Features.Weapons
             spawned.setSpeed(speed);    
             spawned.setLayerMask(layerMask);
         }
+        
+        protected void Spawn(GameObject spawneable,Transform position, Quaternion rotation, float speed, LayerMask layerMask)
+        {
+            var gameObject = Instantiate(spawneable, position.position, rotation);
+            var spawned = gameObject.GetComponent<ISpawneable>();
+            spawned.setSpeed(speed);    
+            spawned.setLayerMask(layerMask);
+        }
     }
 }

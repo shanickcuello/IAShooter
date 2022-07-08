@@ -5,17 +5,15 @@ namespace Features.Flocking
 {
     public class LeaderBehavior : MonoBehaviour, IFlockBehavior
     {
+        [HideInInspector] public Transform _target;
         public float leaderWeight;
-        public Transform target;
-
         public float sanityDistance;
         public float radiusSanityDistance;
-
 
         public Vector3 GetDir(List<IFlockEntity> entities, IFlockEntity entity)
         {
             float weight = leaderWeight;
-            float distance = Vector3.Distance(target.position, entity.Position);
+            float distance = Vector3.Distance(_target.position, entity.Position);
 
             if (distance >= radiusSanityDistance + sanityDistance)
             {
@@ -27,7 +25,7 @@ namespace Features.Flocking
             }
 
 
-            return (target.position - entity.Position).normalized * weight;
+            return (_target.position - entity.Position).normalized * weight;
         }
 
     }

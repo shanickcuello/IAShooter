@@ -1,5 +1,4 @@
 ﻿using Features.Soldier.Scripts;
-using Features.Soldier.Scripts.Weapons;
 using UnityEngine;
 
 namespace Features.Weapons
@@ -9,9 +8,15 @@ namespace Features.Weapons
         [SerializeField] Transform _bulletSpawnPosition;
         [SerializeField] private float _speedMovement;
         [SerializeField] private GameObject _bullet;
+        [SerializeField] private Light light;
         public void Fire(Transform transform)
         {
             Spawn(_bullet, _bulletSpawnPosition, _speedMovement, LayerMask.NameToLayer("Blue"));
+        }
+
+        public void ShutdownLight()
+        {
+            light.enabled = false;
         }
     }
 }

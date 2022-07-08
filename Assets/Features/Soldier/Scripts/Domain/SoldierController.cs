@@ -7,8 +7,8 @@ using Features.LifeSystem;
 using Features.PathFinding;
 using Features.PowerUps;
 using Features.Soldier.Scripts.FSM;
-using Features.Soldier.Scripts.Weapons;
 using Features.StateMachine;
+using Features.Weapons;
 using Features.Weapons.Bullets.Code;
 using UnityEngine;
 

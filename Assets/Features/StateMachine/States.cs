@@ -15,7 +15,7 @@ namespace Features.StateMachine
                 statesDictionary.Add(input, state); //TO DO builder con return;
         }
 
-        public void RemoveTrantition(T input, States<T> state)
+        public void RemoveTransition(T input, States<T> state)
         {
             if (statesDictionary.ContainsKey(input))
                 statesDictionary.Remove(input);

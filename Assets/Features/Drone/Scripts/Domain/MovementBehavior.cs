@@ -11,7 +11,8 @@ namespace Features.Drone.Scripts.Domain
         {
             dir.y = 0;
             transform.position += Time.deltaTime * dir * speed;
-            transform.forward = Vector3.Lerp(transform.forward, dir, speedRot * Time.deltaTime);
+            Quaternion targetRotation = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * speedRot);
         }
     }
 }
