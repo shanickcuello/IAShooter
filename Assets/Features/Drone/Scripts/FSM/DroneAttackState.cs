@@ -16,13 +16,14 @@ namespace Features.Drone.Scripts.FSM
         public override void Awake()
         {
             Debug.Log("Estoy en attack");
-            _droneController.ChangeFollow();
+            _droneController.FollowEnemy();
             _droneController.ShootIntermittent();
         }
 
         public override void Execute()
         {
             _droneController.MoveOrStop();
+            _droneController.CheckEnemySteering();
         }
     }
 }

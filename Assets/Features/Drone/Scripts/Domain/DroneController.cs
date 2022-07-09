@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Linq;
+using System.Threading;
 using Features.Drone.Scripts.FSM;
 using Features.Flocking;
 using Features.LifeSystem;
@@ -33,6 +34,8 @@ namespace Features.Drone.Scripts.Domain
         private Life _life;
         private LeaderBehavior _leaderBehavior;
         private IWeapon _weapon;
+        private float _timeSeeingEnemy;
+        private const float TimeToFollowLeadWhenDoesntSeeEnemy = 5f;
 
         private void Awake()
         {
@@ -53,6 +56,7 @@ namespace Features.Drone.Scripts.Domain
             _droneFollowState.AddTransitionState(EDroneStates.Attack, _droneAttackState);
 
             _droneAttackState.AddTransitionState(EDroneStates.Death, _deathState);
+            _droneAttackState.AddTransitionState(EDroneStates.FollowLead, _droneFollowState);
         }
 
         void Start()
@@ -111,13 +115,15 @@ namespace Features.Drone.Scripts.Domain
 
         public void SearchForEnemy()
         {
-            if (!_aiVision.SearchBy(enemyLayer).Any()) return;
+            if (!IsEnemyOnSight()) return;
             target = _aiVision.SearchBy(enemyLayer).First().transform;
             Debug.Log("found enemy");
             ChangeState(EDroneStates.Attack);
         }
 
-        public void ChangeFollow()
+        private bool IsEnemyOnSight() => _aiVision.SearchBy(enemyLayer).Any();
+
+        public void FollowEnemy()
         {
             if (target == null) return;
             _leaderBehavior._target = target;
@@ -141,6 +147,30 @@ namespace Features.Drone.Scripts.Domain
         {
             Debug.Log("i shoot");
             _weapon.Fire(target);
+        }
+
+        public void CheckEnemySteering()
+        {
+            if (_aiVision.SearchBy(enemyLayer).Contains(target.gameObject))
+            {
+                IncreaseTimeSeeingEnemy();
+                return;
+            }
+            _timeSeeingEnemy -= 1 * Time.deltaTime;
+            _timeSeeingEnemy = Mathf.Max(0, _timeSeeingEnemy);
+            if (_timeSeeingEnemy <= 0)
+            {
+                ChangeState(EDroneStates.FollowLead);
+            }
+        }
+
+        private void IncreaseTimeSeeingEnemy() => _timeSeeingEnemy = TimeToFollowLeadWhenDoesntSeeEnemy;
+
+        public void FollowLead()
+        {
+            if(_lead == null) return;
+            target = _lead;
+            _leaderBehavior._target = _lead;
         }
     }
 

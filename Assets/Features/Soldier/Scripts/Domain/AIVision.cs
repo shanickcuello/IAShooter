@@ -13,7 +13,7 @@ namespace Features.Soldier.Scripts.Domain
         [SerializeField] protected float visionHeight = 1;
         [SerializeField] protected Color visionColor = Color.red;
         [SerializeField] protected int scanFrecuency = 30;
-        [SerializeField] List<GameObject> gameObjectsScaned = new List<GameObject>();
+        [SerializeField] List<GameObject> gameObjectsOnSight = new List<GameObject>();
         [SerializeField] protected LayerMask obstacleLayer;
 
         private Collider[] _colliders = new Collider[50];
@@ -71,15 +71,15 @@ namespace Features.Soldier.Scripts.Domain
             scanCount = Physics.OverlapSphereNonAlloc(transform.position, visionDistance, _colliders,
                 layerGameObjectToSearch,
                 QueryTriggerInteraction.Collide);
-            gameObjectsScaned.Clear();
+            gameObjectsOnSight.Clear();
             for (int i = 0; i < scanCount; i++)
             {
                 GameObject obj = _colliders[i].gameObject;
                 if (IsInSight(obj))
-                    gameObjectsScaned.Add(obj);
+                    gameObjectsOnSight.Add(obj);
             }
 
-            return gameObjectsScaned;
+            return gameObjectsOnSight;
         }
 
         private void OnValidate()
@@ -105,7 +105,7 @@ namespace Features.Soldier.Scripts.Domain
             }
 
             Gizmos.color = Color.green;
-            foreach (var go in gameObjectsScaned)
+            foreach (var go in gameObjectsOnSight)
             {
                 if (go == null)
                     continue;

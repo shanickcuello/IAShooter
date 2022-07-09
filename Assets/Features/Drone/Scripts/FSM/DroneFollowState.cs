@@ -11,6 +11,12 @@ namespace Features.Drone.Scripts.FSM
         {
             _droneController = droneController;
         }
+
+        public override void Awake()
+        {
+            _droneController.FollowLead();
+        }
+
         public override void Execute()
         {
             _droneController.MoveOrStop();
