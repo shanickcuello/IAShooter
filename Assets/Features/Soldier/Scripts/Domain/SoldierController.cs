@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Features.Drone.Scripts.Domain;
 using Features.Flocking;
 using Features.LifeSystem;
 using Features.PathFinding;
@@ -41,6 +42,10 @@ namespace Features.Soldier.Scripts.Domain
         private Life _life;
         [SerializeField] private List<Vector3> listOfPowerUps = new List<Vector3>();
         private Vector3 _fightPosition;
+        private float _timeNotSeeingEnemy;
+        private const float TimeToFollowLeadWhenDoesntSeeEnemy = 2f;
+        private Coroutine _shootRoutine;
+
 
         public Vector3 Direction { get; }
         public Vector3 Position => transform.position;
@@ -72,6 +77,7 @@ namespace Features.Soldier.Scripts.Domain
 
             _soldierAttackState.AddTransitionState(ESoldierStates.Death, _soldierDeathState);
             _soldierAttackState.AddTransitionState(ESoldierStates.SearchLife, _soldierSearchLife);
+            _soldierAttackState.AddTransitionState(ESoldierStates.Patrol, _soldierPatrolState);
 
             _soldierSearchLife.AddTransitionState(ESoldierStates.Death, _soldierDeathState);
             _soldierSearchLife.AddTransitionState(ESoldierStates.GoToFight, _soldierGoToFightState);
@@ -88,6 +94,11 @@ namespace Features.Soldier.Scripts.Domain
             _soldierIdleState = new SoldierIdleState<ESoldierStates>(this, _soldierView);
             _soldierPatrolState = new SoldierPatrolState<ESoldierStates>(this, _soldierView, pathfindingManager);
             _soldierGoToFightState = new SoldierGoToFight<ESoldierStates>(this, pathfindingManager, _soldierView);
+        }
+
+        public void StopShooting()
+        {
+            StopCoroutine(_shootRoutine);
         }
 
         private void Initialize()
@@ -173,7 +184,7 @@ namespace Features.Soldier.Scripts.Domain
         public void ShootIntermittent()
         {
             _soldierView.SetAnimation(SoldierAnimations.Shoot);
-            StartCoroutine(ShootIntermittentCoroutine(_target));
+            _shootRoutine = StartCoroutine(ShootIntermittentCoroutine(_target));
         }
 
         private IEnumerator ShootIntermittentCoroutine(Transform target)
@@ -235,9 +246,28 @@ namespace Features.Soldier.Scripts.Domain
             return closestPowetUp;
         }
 
+
+        public void CheckEnemySteering()
+        {
+            if (_aiVision.IsInVision(target.gameObject, enemyLayer))
+            {
+                IncreaseTimeSeeingEnemy();
+                return;
+            }
+
+            _timeNotSeeingEnemy -= 1 * Time.deltaTime;
+            _timeNotSeeingEnemy = Mathf.Max(0, _timeNotSeeingEnemy);
+            Debug.Log("Time seeing enemy: " + _timeNotSeeingEnemy);
+            if (_timeNotSeeingEnemy <= 0)
+            {
+                ChangeState(ESoldierStates.Patrol);
+            }
+        }
+
+        private void IncreaseTimeSeeingEnemy() => _timeNotSeeingEnemy = TimeToFollowLeadWhenDoesntSeeEnemy;
+
         public void SetFightPosition() => _fightPosition = transform.position;
 
         public Vector3 GetFightPosition() => _fightPosition;
-
     }
 }

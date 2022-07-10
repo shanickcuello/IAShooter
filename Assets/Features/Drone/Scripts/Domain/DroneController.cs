@@ -34,8 +34,9 @@ namespace Features.Drone.Scripts.Domain
         private Life _life;
         private LeaderBehavior _leaderBehavior;
         private IWeapon _weapon;
-        private float _timeSeeingEnemy;
-        private const float TimeToFollowLeadWhenDoesntSeeEnemy = 5f;
+        private float _timeNotSeeingEnemy;
+        private Coroutine _shootRoutine;
+        private const float TimeToFollowLeadWhenDoesntSeeEnemy = 2f;
 
         private void Awake()
         {
@@ -117,7 +118,6 @@ namespace Features.Drone.Scripts.Domain
         {
             if (!IsEnemyOnSight()) return;
             target = _aiVision.SearchBy(enemyLayer).First().transform;
-            Debug.Log("found enemy");
             ChangeState(EDroneStates.Attack);
         }
 
@@ -131,7 +131,7 @@ namespace Features.Drone.Scripts.Domain
 
         public void ShootIntermittent()
         {
-            StartCoroutine(ShootIntermittentCoroutine(target));
+            _shootRoutine = StartCoroutine(ShootIntermittentCoroutine(target));
         }
 
         private IEnumerator ShootIntermittentCoroutine(Transform target)
@@ -145,32 +145,36 @@ namespace Features.Drone.Scripts.Domain
 
         private void Shoot()
         {
-            Debug.Log("i shoot");
             _weapon.Fire(target);
         }
 
         public void CheckEnemySteering()
         {
-            if (_aiVision.SearchBy(enemyLayer).Contains(target.gameObject))
+            if (_aiVision.IsInVision(target.gameObject, enemyLayer))
             {
                 IncreaseTimeSeeingEnemy();
                 return;
             }
-            _timeSeeingEnemy -= 1 * Time.deltaTime;
-            _timeSeeingEnemy = Mathf.Max(0, _timeSeeingEnemy);
-            if (_timeSeeingEnemy <= 0)
+            _timeNotSeeingEnemy -= 1 * Time.deltaTime;
+            _timeNotSeeingEnemy = Mathf.Max(0, _timeNotSeeingEnemy);
+            if (_timeNotSeeingEnemy <= 0)
             {
                 ChangeState(EDroneStates.FollowLead);
             }
         }
 
-        private void IncreaseTimeSeeingEnemy() => _timeSeeingEnemy = TimeToFollowLeadWhenDoesntSeeEnemy;
+        private void IncreaseTimeSeeingEnemy() => _timeNotSeeingEnemy = TimeToFollowLeadWhenDoesntSeeEnemy;
 
         public void FollowLead()
         {
             if(_lead == null) return;
             target = _lead;
             _leaderBehavior._target = _lead;
+        }
+
+        public void StopShooting()
+        {
+            StopCoroutine(_shootRoutine);
         }
     }
 

@@ -22,6 +22,12 @@ namespace Features.Soldier.Scripts.FSM
         public override void Execute()
         {
             _soldierView.LookAt(_soldierController.target);
+            _soldierController.CheckEnemySteering();
+        }
+
+        public override void Exit()
+        {
+            _soldierController.StopShooting();
         }
     }
 }

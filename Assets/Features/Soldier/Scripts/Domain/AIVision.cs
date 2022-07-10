@@ -41,7 +41,12 @@ namespace Features.Soldier.Scripts.Domain
             scanTimer = scanInterval;
             return Scan(layerMask);
         }
-
+        
+        public bool IsInVision(GameObject gameObject, LayerMask layer)
+        {
+            return SearchBy(layer).Contains(gameObject);
+        }
+        
         private bool IsInSight(GameObject go)
         {
             var origin = transform.position;
