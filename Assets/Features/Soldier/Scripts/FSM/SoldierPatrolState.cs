@@ -14,6 +14,7 @@ namespace Features.Soldier.Scripts.FSM
         private Node _destinationNode;
         private Node _currentNode;
         private List<Vector3> _path;
+        private float _patrolTime;
 
         public SoldierPatrolState(SoldierController soldierController, SoldierView soldierView,
             PathfindingManager pathfindingManager)
@@ -25,13 +26,29 @@ namespace Features.Soldier.Scripts.FSM
 
         public override void Awake()
         {
+            SetPatrolTime();
             MoveOverPath();
+        }
+
+        private void SetPatrolTime()
+        {
+            _patrolTime = 5;
         }
 
         public override void Execute()
         {
             _soldierController.SearchForEnemy();
             _soldierController.SearchForLife();
+            DontPatrol();
+        }
+
+        private void DontPatrol()
+        {
+            _patrolTime -= Time.deltaTime;
+            if (_patrolTime <= 0)
+            {
+                ChangeToIdle();
+            }
         }
 
         private void MoveOverPath()
@@ -61,6 +78,11 @@ namespace Features.Soldier.Scripts.FSM
         private void SetCurrentNodeFromPosition()
         {
             _currentNode = _pathfindingManager.PositionToNode(_soldierController.transform.position);
+        }
+
+        public override void Exit()
+        {
+            _soldierController.StopMoving();
         }
     }
 }

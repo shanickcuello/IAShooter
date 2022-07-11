@@ -7,6 +7,7 @@ using Features.Flocking;
 using Features.LifeSystem;
 using Features.PathFinding;
 using Features.PowerUps;
+using Features.RouletteSystem;
 using Features.Soldier.Scripts.FSM;
 using Features.StateMachine;
 using Features.Weapons;
@@ -18,6 +19,9 @@ namespace Features.Soldier.Scripts.Domain
     [RequireComponent(typeof(CapsuleCollider))]
     public class SoldierController : MonoBehaviour, IDamageable, IFlockEntity
     {
+        [Range(0, 5)]
+        [SerializeField] private int dronesCount;
+        [SerializeField] private List<DroneController> drones;
         [SerializeField] PathfindingManager pathfindingManager;
         [SerializeField] private LayerMask enemyLayer;
         [SerializeField] private LayerMask lifeLayer;
@@ -45,6 +49,7 @@ namespace Features.Soldier.Scripts.Domain
         private float _timeNotSeeingEnemy;
         private const float TimeToFollowLeadWhenDoesntSeeEnemy = 2f;
         private Coroutine _shootRoutine;
+        private Roulette _roulette;
 
 
         public Vector3 Direction { get; }
@@ -52,10 +57,25 @@ namespace Features.Soldier.Scripts.Domain
 
         protected void Awake()
         {
+            EnableDrones();
             Initialize();
             CreateStates();
             AddTransitionsStates();
             CreateFsm();
+            CreateRoulette();
+        }
+
+        private void EnableDrones()
+        {
+            for (var i = 0; i < dronesCount; i++)
+            {
+                drones[i].gameObject.SetActive(true);
+            }
+        }
+
+        private void CreateRoulette()
+        {
+            _roulette = new Roulette();
         }
 
         private void CreateFsm()
@@ -198,7 +218,7 @@ namespace Features.Soldier.Scripts.Domain
 
         private void Shoot()
         {
-            _weapon.Fire(_target);
+            _weapon.Fire(gameObject.layer);
         }
 
         public void StopMoving()
@@ -257,7 +277,6 @@ namespace Features.Soldier.Scripts.Domain
 
             _timeNotSeeingEnemy -= 1 * Time.deltaTime;
             _timeNotSeeingEnemy = Mathf.Max(0, _timeNotSeeingEnemy);
-            Debug.Log("Time seeing enemy: " + _timeNotSeeingEnemy);
             if (_timeNotSeeingEnemy <= 0)
             {
                 ChangeState(ESoldierStates.Patrol);

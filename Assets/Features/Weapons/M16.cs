@@ -9,9 +9,9 @@ namespace Features.Weapons
         [SerializeField] private float _speedMovement;
         [SerializeField] private GameObject _bullet;
         [SerializeField] private Light light;
-        public void Fire(Transform transform)
+        public void Fire(int layer)
         {
-            Spawn(_bullet, _bulletSpawnPosition, _speedMovement, LayerMask.NameToLayer("Blue"));
+            Spawn(_bullet, _bulletSpawnPosition, _speedMovement, layer);
         }
 
         public void ShutdownLight()

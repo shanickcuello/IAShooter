@@ -64,5 +64,10 @@ namespace Features.Soldier.Scripts.FSM
         {
             _currentNode = _pathfindingManager.PositionToNode(_soldierController.transform.position);
         }
+
+        public override void Exit()
+        {
+            _soldierController.StopMoving();
+        }
     }
 }

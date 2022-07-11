@@ -4,7 +4,7 @@ namespace Features.Weapons
 {
     public interface IWeapon
     {
-        void Fire(Transform transform);
+        void Fire(int layer);
         void ShutdownLight();
     }
 }

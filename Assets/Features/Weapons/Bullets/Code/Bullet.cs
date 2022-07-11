@@ -1,9 +1,7 @@
-using System;
 using System.Collections;
-using Features.Weapons.Bullets.Code;
 using UnityEngine;
 
-namespace Features.Weapons
+namespace Features.Weapons.Bullets.Code
 {
     public class Bullet : MonoBehaviour, ISpawneable
     {
@@ -50,7 +48,11 @@ namespace Features.Weapons
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (collision.gameObject.layer == _layerMask.value) return;
+            if (collision.gameObject.layer == _layerMask.value)
+            {
+                Destroy(gameObject);
+                return;
+            }
             if (collision.gameObject.GetComponent<IDamageable>() != null)
             {
                 collision.gameObject.GetComponent<IDamageable>().MakeDamage(transform.position, damagePower);

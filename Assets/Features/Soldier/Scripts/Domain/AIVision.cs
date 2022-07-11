@@ -52,7 +52,7 @@ namespace Features.Soldier.Scripts.Domain
             var origin = transform.position;
             var destination = go.transform.position;
             var direction = destination - origin;
-            if (direction.y < 0 || direction.y > visionHeight)
+            if (direction.y < -5 || direction.y > visionHeight)
                 return false;
 
             var deltaAngle = Vector3.Angle(transform.forward, direction);
@@ -62,7 +62,6 @@ namespace Features.Soldier.Scripts.Domain
             }
 
             origin.y += visionHeight / 2;
-            // destination.y = origin.y;
             if (Physics.Linecast(origin, destination, out var hit, obstacleLayer))
             {
                 return false;

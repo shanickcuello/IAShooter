@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Features.Drone.Scripts.FSM;
 using Features.Flocking;
 using Features.LifeSystem;
+using Features.RouletteSystem;
 using Features.Soldier.Scripts.Domain;
 using Features.StateMachine;
 using Features.Weapons;
@@ -17,17 +19,18 @@ namespace Features.Drone.Scripts.Domain
     public class DroneController : MonoBehaviour, IDamageable
     {
         [SerializeField] Transform target;
-        private Transform _lead;
         [SerializeField] private LayerMask enemyLayer;
         [SerializeField] private GameObject _weaponPrefab;
+        private Transform _lead;
         private AIVision _aiVision;
         public float minDistanceToMove;
         MovementBehavior _movementBehavior;
         private FlockEntity _flock;
-
-        private DroneFollowState<EDroneStates> _droneFollowState;
+        
+        private DroneFollowLeadState<EDroneStates> _droneFollowLeadState;
         private DroneDeathState<EDroneStates> _deathState;
         private DroneAttackState<EDroneStates> _droneAttackState;
+        private DroneDefendState<EDroneStates> _droneDefendState;
 
         private Fsm<EDroneStates> _fsm;
         private Rigidbody _rigidbody;
@@ -36,10 +39,13 @@ namespace Features.Drone.Scripts.Domain
         private IWeapon _weapon;
         private float _timeNotSeeingEnemy;
         private Coroutine _shootRoutine;
+        private Roulette _roulette;
+        private bool _defending;
         private const float TimeToFollowLeadWhenDoesntSeeEnemy = 2f;
 
         private void Awake()
         {
+            _roulette = new Roulette();
             _lead = target;
             _weapon = _weaponPrefab.GetComponent<IWeapon>();
             _aiVision = GetComponent<AIVision>();
@@ -50,20 +56,27 @@ namespace Features.Drone.Scripts.Domain
             _leaderBehavior._target = target;
 
             _deathState = new DroneDeathState<EDroneStates>(this);
-            _droneFollowState = new DroneFollowState<EDroneStates>(this);
+            _droneFollowLeadState = new DroneFollowLeadState<EDroneStates>(this);
             _droneAttackState = new DroneAttackState<EDroneStates>(this);
+            _droneDefendState = new DroneDefendState<EDroneStates>(this);
 
-            _droneFollowState.AddTransitionState(EDroneStates.Death, _deathState);
-            _droneFollowState.AddTransitionState(EDroneStates.Attack, _droneAttackState);
+            _droneFollowLeadState.AddTransitionState(EDroneStates.Death, _deathState);
+            _droneFollowLeadState.AddTransitionState(EDroneStates.Attack, _droneAttackState);
+            _droneFollowLeadState.AddTransitionState(EDroneStates.Defend, _droneDefendState);
 
             _droneAttackState.AddTransitionState(EDroneStates.Death, _deathState);
-            _droneAttackState.AddTransitionState(EDroneStates.FollowLead, _droneFollowState);
+            _droneAttackState.AddTransitionState(EDroneStates.FollowLead, _droneFollowLeadState);
+            _droneAttackState.AddTransitionState(EDroneStates.Defend, _droneDefendState);
+            
+            _droneDefendState.AddTransitionState(EDroneStates.Attack, _droneAttackState);
+            _droneDefendState.AddTransitionState(EDroneStates.FollowLead, _droneFollowLeadState);
+            _droneDefendState.AddTransitionState(EDroneStates.Death, _deathState);
         }
 
         void Start()
         {
             _movementBehavior = GetComponent<MovementBehavior>();
-            _fsm = new Fsm<EDroneStates>(_droneFollowState);
+            _fsm = new Fsm<EDroneStates>(_droneFollowLeadState);
         }
 
         void Update()
@@ -97,10 +110,24 @@ namespace Features.Drone.Scripts.Domain
 
         public void GetDamage(int damagePower)
         {
+            if(_defending) return;
             _life.DecreaseLife(damagePower);
+            DefendOrNot();
         }
 
-        private void ChangeState(EDroneStates state)
+        private void DefendOrNot()
+        {
+            Dictionary<String, int> decision = new Dictionary<string, int>();
+            decision.Add("doNothing", 20);
+            decision.Add("defend", (5 / _life.LifeAmount) * 100);
+            
+            if(_roulette.Execute(decision) == "defend")
+            {
+                ChangeState(EDroneStates.Defend);
+            }
+        }
+
+        public void ChangeState(EDroneStates state)
         {
             _fsm.Transition(state);
         }
@@ -109,8 +136,8 @@ namespace Features.Drone.Scripts.Domain
         {
             _rigidbody.mass = 1;
             _rigidbody.useGravity = true;
+            _rigidbody.AddForce(Vector3.up * 8000 + Vector3.right * 1000);
             _rigidbody.constraints = RigidbodyConstraints.None;
-            _rigidbody.AddForce(Vector3.up * 80);
             _weapon.ShutdownLight();
         }
 
@@ -121,7 +148,10 @@ namespace Features.Drone.Scripts.Domain
             ChangeState(EDroneStates.Attack);
         }
 
-        private bool IsEnemyOnSight() => _aiVision.SearchBy(enemyLayer).Any();
+        private bool IsEnemyOnSight()
+        {
+            return _aiVision.SearchBy(enemyLayer).Any();
+        }
 
         public void FollowEnemy()
         {
@@ -145,7 +175,7 @@ namespace Features.Drone.Scripts.Domain
 
         private void Shoot()
         {
-            _weapon.Fire(target);
+            _weapon.Fire(gameObject.layer);
         }
 
         public void CheckEnemySteering()
@@ -176,12 +206,24 @@ namespace Features.Drone.Scripts.Domain
         {
             StopCoroutine(_shootRoutine);
         }
+
+        public void Defending()
+        {
+            StopShooting();
+            _defending = true;
+        }
+
+        public void StopDefending()
+        {
+            _defending = false;
+        }
     }
 
     public enum EDroneStates
     {
         FollowLead,
         Death,
-        Attack
+        Attack,
+        Defend
     }
 }

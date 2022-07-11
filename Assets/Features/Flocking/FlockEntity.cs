@@ -7,7 +7,6 @@ namespace Features.Flocking
 {
     public class FlockEntity : MonoBehaviour, ISteering, IFlockEntity
     {
-        public LayerMask maskEntity;
         public List<IFlockBehavior> _behaviors = new List<IFlockBehavior>();
         public float radius;
         Vector3 _dir = Vector3.zero;
@@ -22,7 +21,7 @@ namespace Features.Flocking
 
         public Vector3 GetDir()
         {
-            Collider[] objs = Physics.OverlapSphere(transform.position, radius, maskEntity);
+            Collider[] objs = Physics.OverlapSphere(transform.position, radius);
             List<IFlockEntity> entities = new List<IFlockEntity>();
             for (int i = 0; i < objs.Length; i++)
             {

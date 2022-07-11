@@ -27,6 +27,7 @@ namespace Features.Soldier.Scripts.FSM
 
         public override void Exit()
         {
+            _soldierController.StopMoving();
             _soldierController.StopShooting();
         }
     }

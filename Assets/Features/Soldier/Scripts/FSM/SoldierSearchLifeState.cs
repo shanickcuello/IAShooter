@@ -15,6 +15,7 @@ namespace Features.Soldier.Scripts.FSM
         private PathfindingManager _pathfindingManager;
         private readonly SoldierView _soldierView;
         private Vector3 _fightPosition;
+        private float _timeSearchingLife;
 
         public SoldierSearchLifeState(SoldierController soldierController, 
             PathfindingManager pathfindingManager,
@@ -27,13 +28,27 @@ namespace Features.Soldier.Scripts.FSM
 
         public override void Awake()
         {
+            SetTimeSeachingLife();
             SaveCurrentPosition();
             MoveOverPath();
         }
 
+        private void SetTimeSeachingLife()
+        {
+            _timeSearchingLife = 5;
+        }
+
         private void SaveCurrentPosition()
         {
+            DontSearchLife();
             _soldierController.SetFightPosition();
+        }
+
+        private void DontSearchLife()
+        {
+            _timeSearchingLife -= Time.deltaTime;
+            if (_timeSearchingLife <= 0)
+                _soldierController.ChangeState(ESoldierStates.Idle);
         }
 
         private void MoveOverPath()
@@ -71,6 +86,11 @@ namespace Features.Soldier.Scripts.FSM
         private void SetCurrentNodeFromPosition()
         {
             _currentNode = _pathfindingManager.PositionToNode(_soldierController.transform.position);
+        }
+
+        public override void Exit()
+        {
+            _soldierController.StopMoving();
         }
     }
 }
