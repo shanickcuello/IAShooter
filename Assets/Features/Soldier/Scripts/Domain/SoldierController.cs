@@ -19,8 +19,9 @@ namespace Features.Soldier.Scripts.Domain
     [RequireComponent(typeof(CapsuleCollider))]
     public class SoldierController : MonoBehaviour, IDamageable, IFlockEntity
     {
-        [Range(0, 5)]
-        [SerializeField] private int dronesCount;
+        [SerializeField] private GameObject menuPanel;
+
+        [Range(0, 5)] [SerializeField] private int dronesCount;
         [SerializeField] private List<DroneController> drones;
         [SerializeField] PathfindingManager pathfindingManager;
         [SerializeField] private LayerMask enemyLayer;
@@ -131,8 +132,15 @@ namespace Features.Soldier.Scripts.Domain
 
         private void Death()
         {
+            StartCoroutine(EnablePanel());
             _soldierView.Death();
             ChangeState(ESoldierStates.Death);
+        }
+
+        IEnumerator EnablePanel()
+        {
+            yield return new WaitForSeconds(2);
+            menuPanel.SetActive(true);
         }
 
         private void Start()
